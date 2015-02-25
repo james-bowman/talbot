@@ -4,9 +4,9 @@ import (
 	"log"
 	"fmt"
 	"strings"
-	"github.com/james-bowman/slack"
 	"github.com/james-bowman/jeannie"
 	"github.com/james-bowman/sentence"
+	"github.com/james-bowman/slack"
 	"regexp"
 	"strconv"
 )
@@ -120,26 +120,26 @@ func findRoomsByFeatures(instruction string) string {
 	return response
 }
 
-func processMessage(user string, question string, replyto string) string {
+func processMessage(message *slack.Message)  {
 	var response string
 	
-	log.Printf("%s-> %s", user, question)
+	log.Printf("%s-> %s", message.From, message.Text)
 	
 	var sentences []string
 	for key, _ := range answerers {
 		sentences = append(sentences, key)
 	}
 	
-	answer, err := sentence.Recognise(sentenceRecognitionToken, question, sentences)
+	answer, err := sentence.Recognise(sentenceRecognitionToken, message.Text, sentences)
 		
 	if answer != "" {
-		response = answerers[answer](question)
+		response = answerers[answer](message.Text)
 	}
 	
 	if response == "" {
 		if err == nil {
 			// if sentence not matched to a supported request then fallback to asking Jeannie
-			response, err = jeannie.AskQuestion(jeannieToken, question)
+			response, err = jeannie.AskQuestion(jeannieToken, message.Text)
 		}
 	}
 	
@@ -147,36 +147,7 @@ func processMessage(user string, question string, replyto string) string {
 		response = "I seem to be having a problem: " + err.Error()
 	}
 	
-	fullResponse := replyto + response
-	log.Printf("me-> %s", fullResponse)
+	log.Printf("me-> %s", response)
 	
-	return fullResponse
-}
-
-func filterMessage(data slack.Event) *slack.Event {
-	var response string
-	
-	if data.Type == "message" && data.ReplyTo == 0 {
-		if data.Channel[0] == 'D' {
-			// process direct messages
-			response = processMessage(data.User, data.Text, "")
-		} else {
-			// process messages in public channels directed at Talbot
-			r, _ := regexp.Compile("^(<@U03K60XR7>|@?talbot):? (.+)")
-				
-			matches := r.FindStringSubmatch(data.Text)
-				
-			if len(matches) == 3 {
-				response = processMessage(data.User, matches[2], "<@" + data.User + ">: ")
-			} else {
-				if strings.Contains(strings.ToUpper(data.Text), "BATCH") {
-					response = "<@" + data.User + ">: Language Error: I don't understand the term 'Batch' please re-state using goal orientated language"
-				}
-			}
-		}
-	}
-	if response != "" {
-		return &slack.Event{Type: "message", Channel: data.Channel, Text: response}
-	}
-	return nil
+	message.Respond(response)
 }
