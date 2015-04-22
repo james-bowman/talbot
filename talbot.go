@@ -2,29 +2,25 @@ package main
 
 import (
 	"log"
+	"fmt"
+	"io/ioutil"
 	"github.com/james-bowman/slack"
-)
-
-const (
-//  James' slack token
-//	slackJamesToken = "xoxp-3028015569-3028015571-3620637852-ebd10f"
-
-	slackToken = "xoxb-3652031857-rWSOPDYm7p0WzzMwSq2ECqiC"
-	
-	jeannieToken = "g4hcu5vxqcmshoiWPwKWrhFOX1j8p1rd8FOjsngsVHYvkCBQYv"
-	
-	sentenceRecognitionToken = jeannieToken
-	
+	"github.com/james-bowman/talbot/brain"
 )
 
 func main() {
-	Init()
+	slackTokenFileName := "slack.token"
 
-	conn, err := slack.Connect(slackToken)
+	slackToken, err := ioutil.ReadFile(slackTokenFileName)
+	if err != nil {
+		log.Panic(fmt.Sprintf("Error opening slack authentication token file %s: %s", slackTokenFileName, err))
+	}
+
+	conn, err := slack.Connect(string(slackToken))
 	
 	if err != nil {
 		log.Fatal(err)
 	}
 		
-	slack.EventProcessor(conn, processMessage)	
+	slack.EventProcessor(conn, brain.OnAskedMessage, brain.OnHeardMessage)	
 }
