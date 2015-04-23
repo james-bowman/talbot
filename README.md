@@ -18,8 +18,8 @@ import "github.com/james-bowman/talbot/brain"
 func init() {
 	brain.Register(brain.Action{
     		Regex: regexp.MustCompile("(?i)open the pod bay doors"),
-	    	Usage: "boo",
-			Description: "Surprise me", 
+	    	Usage: "open the pod bay doors",
+			Description: "Opens the bay doors", 
     		Answerer: func(dummy string) string {
     			return "I'm sorry Dave, I can't do that right now."
 			},
