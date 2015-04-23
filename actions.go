@@ -9,26 +9,26 @@ import (
 
 func init() {
 	brain.Register(brain.Action{
-    		Regex: regexp.MustCompile("(?i)ping"),
-	    	Usage: "ping",
-			Description: "Reply with pong", 
-    		Answerer: func(dummy string) string {
-    			return "pong"
-			},
+		Regex: regexp.MustCompile("(?i)ping"),
+		Usage: "ping",
+		Description: "Reply with pong", 
+		Answerer: func(dummy string) string {
+			return "pong"
+		},
 	})
 		
 	brain.Register(brain.Action{
-    		Regex: regexp.MustCompile("(?i)^(hello|hi|hiya|howdy|bonjour|bon dia|hallo|salut|aloha|hola|hey|yo)($| )"),
-    		Usage: "hello", 
-   	 		Description: "Reply with a random greeting", 
-    		Answerer: greeting,
+		Regex: regexp.MustCompile("(?i)^(hello|hi|hiya|howdy|bonjour|bon dia|hallo|salut|aloha|hola|hey|yo)($| )"),
+		Usage: "hello", 
+		Description: "Reply with a random greeting", 
+		Answerer: greeting,
 	})
 	
 	brain.Register(brain.Action{
-    		Regex: regexp.MustCompile("(?i)rules"), 
-			Usage: "the rules", 
-	    	Description: "Make sure I know the rules", 
-			Answerer: rules,
+		Regex: regexp.MustCompile("(?i)rules"), 
+		Usage: "the rules", 
+		Description: "Make sure I know the rules", 
+		Answerer: rules,
 	})
 }
 
