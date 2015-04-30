@@ -2,9 +2,9 @@ package brain
 
 import (
 	"fmt"
+	"github.com/james-bowman/slack"
 	"log"
 	"regexp"
-	"github.com/james-bowman/slack"
 )
 
 var tellCommand = regexp.MustCompile("(?i)tell (<.*?>)( .*)? <#(.*?)>? (.*)")
@@ -13,16 +13,16 @@ type Action struct {
 	// indicates whether the action should be checked for all messages (true) or just those
 	// directed at the bot (false).  Defaults to false.
 	Hear bool
-	
+
 	// pattern to match in the message for the action's Answerer function to execute
 	Regex *regexp.Regexp
-	
+
 	// usage example
 	Usage string
-	
+
 	// textual help description for the action
 	Description string
-	
+
 	// function to execute if the Regex matches
 	Answerer actionFunc
 }
@@ -46,14 +46,14 @@ func (a actionList) handle(message string, asked bool) string {
 	for _, action = range a {
 		if action.Hear || asked {
 			matches := action.Regex.FindStringSubmatch(message)
-	
+
 			if len(matches) > 0 {
 				response = action.Answerer(message)
-				break;
+				break
 			}
 		}
 	}
-	
+
 	return response
 }
 
@@ -72,42 +72,45 @@ func RegisterDefault(action actionFunc) {
 
 func init() {
 	Register(Action{
-    	Regex: regexp.MustCompile("(?i)help"), 
-    	Usage: "help",
-	   	Description: "Reply with usage instructions", 
-    	Answerer: func(dummy string) string {
+		Regex:       regexp.MustCompile("(?i)help"),
+		Usage:       "help",
+		Description: "Reply with usage instructions",
+		Answerer: func(dummy string) string {
 			response := "I am a robot that listens to the team's chat and provides automated functions." +
 				"  I currently support the following commands:\n"
-	
+
 			for _, value := range actions {
 				if value.Usage != "" {
 					response = fmt.Sprintf("%s\n\t%s", response, value)
 				}
 			}
-	
+
 			return response + "\n\nI can do some other things too - try asking me something!"
 		},
 	})
 }
 
-func OnHeardMessage(message *slack.Message)  {
+func OnHeardMessage(message *slack.Message) {
 	response := actions.handle(message.Text, false)
 	if response != "" {
-		message.Send(response)
+		if err := message.Send(response); err != nil {
+			// gulp!
+			log.Printf("Error sending message: %s with message: '%s'", err, response)
+		}
 	}
 }
 
-func OnAskedMessage(message *slack.Message)  {
+func OnAskedMessage(message *slack.Message) {
 	var response string
-	
+
 	log.Printf("%s-> %s", message.From, message.Text)
-	
+
 	matches := tellCommand.FindStringSubmatch(message.Text)
 	if len(matches) > 0 {
-		message.Tell(matches[3], matches[1] + ": " + matches[4])
+		message.Tell(matches[3], matches[1]+": "+matches[4])
 		return
 	}
-	
+
 	response = actions.handle(message.Text, true)
 
 	if response == "" {
@@ -118,8 +121,11 @@ func OnAskedMessage(message *slack.Message)  {
 			response = "I don't understand.\n_Ask me_ `help` _for the list of commands I currently understand_"
 		}
 	}
-	
+
 	log.Printf("me-> %s", response)
-	
-	message.Respond(response)
+
+	if err := message.Respond(response); err != nil {
+		// gulp!
+		log.Printf("Error responding to message: %s\nwith Message: '%s'", err, response)
+	}
 }
