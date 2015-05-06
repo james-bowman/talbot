@@ -1,4 +1,4 @@
-package main
+package main // import "github.com/james-bowman/talbot"
 
 import (
 	"encoding/json"

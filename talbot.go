@@ -1,11 +1,11 @@
-package main
+package main // import "github.com/james-bowman/talbot"
 
 import (
-	"log"
 	"fmt"
-	"io/ioutil"
 	"github.com/james-bowman/slack"
 	"github.com/james-bowman/talbot/brain"
+	"io/ioutil"
+	"log"
 )
 
 func main() {
@@ -17,10 +17,10 @@ func main() {
 	}
 
 	conn, err := slack.Connect(string(slackToken))
-	
+
 	if err != nil {
 		log.Fatal(err)
 	}
-		
-	slack.EventProcessor(conn, brain.OnAskedMessage, brain.OnHeardMessage)	
+
+	slack.EventProcessor(conn, brain.OnAskedMessage, brain.OnHeardMessage)
 }

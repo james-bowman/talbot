@@ -1,34 +1,34 @@
-package main
+package main // import "github.com/james-bowman/talbot"
 
 import (
+	"github.com/james-bowman/talbot/brain"
 	"math/rand"
 	"regexp"
 	"time"
-	"github.com/james-bowman/talbot/brain"
 )
 
 func init() {
 	brain.Register(brain.Action{
-		Regex: regexp.MustCompile("(?i)ping"),
-		Usage: "ping",
-		Description: "Reply with pong", 
+		Regex:       regexp.MustCompile("(?i)ping"),
+		Usage:       "ping",
+		Description: "Reply with pong",
 		Answerer: func(dummy string) string {
 			return "pong"
 		},
 	})
-		
+
 	brain.Register(brain.Action{
-		Regex: regexp.MustCompile("(?i)^(hello|hi|hiya|howdy|bonjour|bon dia|hallo|salut|aloha|hola|hey|yo)($| )"),
-		Usage: "hello", 
-		Description: "Reply with a random greeting", 
-		Answerer: greeting,
+		Regex:       regexp.MustCompile("(?i)^(hello|hi|hiya|howdy|bonjour|bon dia|hallo|salut|aloha|hola|hey|yo)($| )"),
+		Usage:       "hello",
+		Description: "Reply with a random greeting",
+		Answerer:    greeting,
 	})
-	
+
 	brain.Register(brain.Action{
-		Regex: regexp.MustCompile("(?i)rules"), 
-		Usage: "the rules", 
-		Description: "Make sure I know the rules", 
-		Answerer: rules,
+		Regex:       regexp.MustCompile("(?i)rules"),
+		Usage:       "the rules",
+		Description: "Make sure I know the rules",
+		Answerer:    rules,
 	})
 }
 
@@ -41,6 +41,6 @@ func rules(dummy string) string {
 func greeting(greetingmsg string) string {
 	greetings := []string{"hello", "hi", "howdy", "hiya", "bon dia", "aloha", "hola", "yo"}
 	rand.Seed(time.Now().Unix())
-	
+
 	return greetings[rand.Intn(len(greetings))]
 }
