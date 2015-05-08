@@ -1,5 +1,7 @@
 # Talbot
 
+[![Build Status](https://travis-ci.org/james-bowman/talbot.svg?branch=master)](https://travis-ci.org/james-bowman/talbot)
+
 Talbot is a basic chat bot (robot) written in Go that listens and responds to [Slack](https://slack.com) messages.
 
 To make use of Talbot, you will need to setup a user account or a ['bot' user](https://api.slack.com/bot-users) (a special kind of user account specifically designed for programatic access to APIs) and obtain an [authentication token](https://api.slack.com/web#basics) from Slack.
