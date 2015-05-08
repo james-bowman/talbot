@@ -45,4 +45,7 @@ Out of the box, Talbot supports the following commands:
 - `ping` - Reply with pong
 - `hello` - Reply with a random greeting
 - `the rules` - Make sure talbot knows the rules
+- `image me <search expression>` - Queries Google Images and returns a random matching image
+- `animate me <search expression>` - Like `animate me` except looks for animated GIFs
+- `mustache me <seach expression or URL>` - Adds a mustache to the image matched by Google Image search or to the image explicitly specified by URL.
 
