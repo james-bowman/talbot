@@ -14,56 +14,36 @@ import (
 )
 
 func init() {
+	imageRegex := "(?i)(image|img)( me)? (.*)"
+	animateRegex := "(?i)(animate)( me)? (.*)"
+	mustacheRegex := "(?i)(?:mo?u)?s?ta(?:s|c)h(?:e|ify)?(?: me)? (.*)"
+
 	brain.Register(brain.Action{
-		Regex:       regexp.MustCompile("(?i)(image|img)( me)? (.*)"),
+		Regex:       regexp.MustCompile(imageRegex),
 		Usage:       "image me <search expression>",
 		Description: "Queries Google Images for _search expression_ and returns random result",
 		Answerer: func(message string) string {
-			reExpression, err := regexp.Compile(`(?i)(image|img)( me)? (.*)`)
-
-			if err != nil {
-				log.Printf("Error compiling Regex to obtain query expression: %s", err)
-				return ""
-			}
-
-			searchExpression := reExpression.FindStringSubmatch(message)
-
-			if len(searchExpression) > 0 {
-				return imageSearch(searchExpression[3], false, false)
-			}
-			return ""
+			return processQueryAndSearch(message, imageRegex, false)
 		},
 	})
 
 	brain.Register(brain.Action{
-		Regex:       regexp.MustCompile("(?i)(animate)( me)? (.*)"),
+		Regex:       regexp.MustCompile(animateRegex),
 		Usage:       "animate me <search expression>",
 		Description: "The sames as `image me` except requests an animated gif matching _search expression_",
 		Answerer: func(message string) string {
-			reExpression, err := regexp.Compile(`(?i)(animate)( me)? (.*)`)
-
-			if err != nil {
-				log.Printf("Error compiling Regex to obtain query expression: %s", err)
-				return ""
-			}
-
-			searchExpression := reExpression.FindStringSubmatch(message)
-
-			if len(searchExpression) > 0 {
-				return imageSearch(searchExpression[3], true, false)
-			}
-			return ""
+			return processQueryAndSearch(message, animateRegex, true)
 		},
 	})
 
 	brain.Register(brain.Action{
-		Regex:       regexp.MustCompile("(?i)(?:mo?u)?s?ta(?:s|c)h(?:e|ify)?(?: me)? (.*)"),
+		Regex:       regexp.MustCompile(mustacheRegex),
 		Usage:       "mustache me <search expression or URL>",
 		Description: "Queries Google Images for _search expression_ and adds a mustache or simply mustachifies the image at _url_",
 		Answerer: func(message string) string {
 			mustachify := "http://mustachify.me/rand?src=%s"
 
-			reExpression, err := regexp.Compile(`(?i)(?:mo?u)?s?ta(?:s|c)h(?:e|ify)?(?: me)? (.*)`)
+			reExpression, err := regexp.Compile(mustacheRegex)
 			if err != nil {
 				log.Printf("Error compiling Regex to obtain query expression: %s", err)
 				return ""
@@ -87,6 +67,22 @@ func init() {
 	})
 }
 
+func processQueryAndSearch(message string, regex string, animated bool) string {
+	reExpression, err := regexp.Compile(regex)
+
+	if err != nil {
+		log.Printf("Error compiling Regex to obtain query expression: %s", err)
+		return ""
+	}
+
+	searchExpression := reExpression.FindStringSubmatch(message)
+
+	if len(searchExpression) > 0 {
+		return imageSearch(searchExpression[3], animated, false)
+	}
+	return ""
+}
+
 func imageSearch(expr string, animated bool, faces bool) string {
 	googleURL, err := url.Parse("http://ajax.googleapis.com/ajax/services/search/images")
 	if err != nil {
@@ -98,6 +94,7 @@ func imageSearch(expr string, animated bool, faces bool) string {
 	q.Set("v", "1.0")
 	q.Set("rsz", "8")
 	q.Set("safe", "active")
+	q.Set("q", expr)
 
 	if animated {
 		q.Set("imgtype", "animated")
@@ -107,11 +104,9 @@ func imageSearch(expr string, animated bool, faces bool) string {
 		q.Set("imgtype", "face")
 	}
 
-	q.Set("q", expr)
-
 	googleURL.RawQuery = q.Encode()
-
 	resp, err := http.Get(googleURL.String())
+
 	if err != nil {
 		log.Printf("Error calling url '%s' : %s ", googleURL, err)
 		return "Sorry I had a problem finding that image from Google"
@@ -125,11 +120,8 @@ func imageSearch(expr string, animated bool, faces bool) string {
 		return "Sorry I had a problem finding that image from Google"
 	}
 
-	fmt.Printf("Response from Google: %s", body)
-
 	var results map[string]interface{}
-	err = json.Unmarshal(body, &results)
-	if err != nil {
+	if err = json.Unmarshal(body, &results); err != nil {
 		log.Printf("%T\n%s\n%#v\n", err, err, err)
 		switch v := err.(type) {
 		case *json.SyntaxError:
@@ -151,8 +143,6 @@ func imageSearch(expr string, animated bool, faces bool) string {
 
 			i := images[rand.Intn(len(images))].(map[string]interface{})
 			image = i["unescapedUrl"].(string)
-		} else {
-			image = images[0].(map[string]interface{})["unescapedUrl"].(string)
 		}
 
 		reURL, err := regexp.Compile(`(?i).(png|jpe?g|gif)$`)
