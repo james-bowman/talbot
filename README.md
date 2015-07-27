@@ -1,6 +1,7 @@
 # Talbot
 
 [![Build Status](https://travis-ci.org/james-bowman/talbot.svg?branch=master)](https://travis-ci.org/james-bowman/talbot)
+[![Stack Share](http://img.shields.io/badge/tech-stack-0690fa.svg?style=flat)](http://stackshare.io/james-bowman/talbot)
 
 Talbot is a basic chat bot (robot) written in Go that listens and responds to [Slack](https://slack.com) messages.
 
